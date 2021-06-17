@@ -1,4 +1,5 @@
-from mylib import Weather, CreateI2C
+from mylib import CreateI2C
+from weather import Weather
 
 import utime
 
