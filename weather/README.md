@@ -14,7 +14,7 @@ This is a basic little weather machine that I am making.
 
 * AHT20 Library: <https://github.com/targetblank/micropython_ahtx0>
 * Waveshare Library: <https://github.com/waveshare/Pico_ePaper_Code/blob/main/python/Pico_ePaper-2.13.py>
-
+* Requires OS: <https://github.com/waveshare/Pico_ePaper_Code/blob/main/python/rp2-pico-20210418-v1.15.uf2>
 
 ## Features
 
