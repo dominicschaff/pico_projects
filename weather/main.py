@@ -7,8 +7,8 @@ import ahtx0
 
 i2c = CreateI2C()
 
-# 30(minutes), 60(seconds per minute), 2(refreshes twice a minute)
-weather = Weather(graph_every=30*60*2)
+# 30(minutes), 2(refreshes twice a minute)
+weather = Weather(graph_every=30*2)
 
 sensor = ahtx0.AHT10(i2c)
 
