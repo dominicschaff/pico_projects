@@ -23,6 +23,9 @@ class Screen:
     def box_fill(self, x, y, s, c=0):
         self.epd.fill_rect(x-s//2, y-s//2, s, s, c)
 
+    def hline(self, y):
+        self.epd.hline(0, y, self.epd.width, 0x00)
+
     def show(self):
         self.epd.display_Base(self.epd.buffer)
         self.epd.delay_ms(2000)
@@ -53,3 +56,4 @@ class Screen:
             e = int((v-v_min)*scale)
             self.epd.line(sx+i, sy - py, sx+1+i, sy - e, 0)
             py=e
+
