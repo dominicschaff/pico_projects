@@ -47,7 +47,7 @@ Button(6).interupt(b3_down)
 
 while True:
     selfie.run()
-    time.sleep(0.1)
+    time.sleep(0.05)
         
     
 

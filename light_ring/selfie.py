@@ -1,5 +1,7 @@
 from mylib import Leds, Colours, xrange, Button
 
+MAX_COLOUR = len(Colours.ALL_COLOURS)-1
+
 class Selfie:
     EMPTY = 0
     WHITE = 1
@@ -10,6 +12,7 @@ class Selfie:
 
     def __init__(self, led_pin=16, led_count=1):
         self.led_count = led_count
+        self.half = led_count//2
         self.leds = Leds(pin=led_pin, leds=led_count)
         self.mode = Selfie.EMPTY
         self.brightness = 0.1
@@ -19,6 +22,7 @@ class Selfie:
         self.colour_index2 = 5
         self.colour = Colours.ALL_COLOURS[self.colour_index]
         self.colour2 = Colours.ALL_COLOURS[self.colour_index2]
+        self.white_index = Colours.WHITE_PURE
 
     def set_mode(self, mode):
         print("Setting mode to %d" % mode)
@@ -32,14 +36,10 @@ class Selfie:
         self.set_mode((self.mode+5)%6)
 
     def mode_breathe(self):
-        if self.iteration > 100:
-            self.iteration = 0
-
-        s = self.iteration
+        self.leds.fill(self.colour, abs(self.iteration / 50))
+        self.iteration = self.iteration + self.iteration_size
         if self.iteration > 50:
-            s = 100 - self.iteration
-        self.leds.fill(self.colour, s/50)
-        self.iteration += 1
+            self.iteration = -50
 
     def wheel(self, pos):
         # Input a value 0 to 255 to get a color value.
@@ -61,30 +61,23 @@ class Selfie:
         self.iteration = (self.iteration + self.iteration_size) % 256
 
     def mode_flip(self):
-        half = self.led_count//2
-        for i in range(half):
+        for i in range(self.half):
             self.leds.pixel(i, self.colour, self.brightness)
-        for i in range(half, self.led_count):
+        for i in range(self.half, self.led_count):
             self.leds.pixel(i, self.colour2, self.brightness)
 
     def run(self):
         if self.mode == Selfie.EMPTY:
-            print("Show black")
             self.leds.fill(Colours.BLACK)
-        if self.mode == Selfie.WHITE:
-            print("Show white with %f" % self.brightness)
-            self.leds.fill(Colours.WHITE, self.brightness)
-        if self.mode == Selfie.RGB:
-            print("Show RGB")
+        elif self.mode == Selfie.WHITE:
+            self.leds.fill(Colours.WHITES[self.white_index], self.brightness)
+        elif self.mode == Selfie.RGB:
             self.leds.fill(self.colour, 1.0)
-        if self.mode == Selfie.FLIP:
-            print("Show Flip")
+        elif self.mode == Selfie.FLIP:
             self.mode_flip()
-        if self.mode == Selfie.RAINBOW:
-            print("Show Rainbow")
+        elif self.mode == Selfie.RAINBOW:
             self.mode_rainbow()
-        if self.mode == Selfie.BREATHE:
-            print("Breathing")
+        elif self.mode == Selfie.BREATHE:
             self.mode_breathe()
         self.leds.show()
 
@@ -92,7 +85,7 @@ class Selfie:
         if self.mode in [Selfie.WHITE, Selfie.RAINBOW, Selfie.FLIP]:
             self.brightness = min(1.0, self.brightness + 0.1)
         if self.mode == Selfie.BREATHE:
-            self.colour_index = (self.colour_index + 1) % len(Colours.ALL_COLOURS)
+            self.colour_index = min(self.colour_index + 1, MAX_COLOUR)
             self.colour = Colours.ALL_COLOURS[self.colour_index]
         if self.mode == Selfie.RGB:
             self.colour[0] = min(self.colour[0] + 10, 255)
@@ -101,7 +94,7 @@ class Selfie:
         if self.mode in [Selfie.WHITE, Selfie.RAINBOW, Selfie.FLIP]:
             self.brightness = max(0.0, self.brightness - 0.1)
         if self.mode == Selfie.BREATHE:
-            self.colour_index = (self.colour_index - 1 + len(Colours.ALL_COLOURS)) % len(Colours.ALL_COLOURS)
+            self.colour_index = max(self.colour_index - 1, 0)
             self.colour = Colours.ALL_COLOURS[self.colour_index]
         if self.mode == Selfie.RGB:
             self.colour[0] = max(self.colour[0] - 10, 0)
@@ -110,30 +103,34 @@ class Selfie:
         if self.mode == Selfie.RGB:
             self.colour[1] = min(self.colour[1] + 10, 255)
         if self.mode == Selfie.FLIP:
-            self.colour_index = (self.colour_index + 1) % len(Colours.ALL_COLOURS)
+            self.colour_index = min(self.colour_index + 1, MAX_COLOUR)
             self.colour = Colours.ALL_COLOURS[self.colour_index]
-        if self.mode == Selfie.RAINBOW:
+        if self.mode in [Selfie.RAINBOW, Selfie.BREATHE]:
             self.iteration_size += 1
+        if self.mode == Selfie.WHITE:
+            self.white_index = min(self.white_index + 1, MAX_COLOUR)
 
     def b2_down(self):
         if self.mode == Selfie.RGB:
             self.colour[1] = max(self.colour[1] - 10, 0)
         if self.mode == Selfie.FLIP:
-            self.colour_index = (self.colour_index - 1 + len(Colours.ALL_COLOURS)) % len(Colours.ALL_COLOURS)
+            self.colour_index = max(self.colour_index - 1, 0)
             self.colour = Colours.ALL_COLOURS[self.colour_index]
-        if self.mode == Selfie.RAINBOW:
+        if self.mode in [Selfie.RAINBOW, Selfie.BREATHE]:
             self.iteration_size -= 1
+        if self.mode == Selfie.WHITE:
+            self.white_index = max(0, self.white_index -1)
 
     def b3_up(self):
         if self.mode == Selfie.RGB:
             self.colour[2] = min(self.colour[2] + 10, 255)
         if self.mode == Selfie.FLIP:
-            self.colour_index2 = (self.colour_index2 + 1) % len(Colours.ALL_COLOURS)
+            self.colour_index2 = min(self.colour_index2 + 1, MAX_COLOUR)
             self.colour2 = Colours.ALL_COLOURS[self.colour_index2]
 
     def b3_down(self):
         if self.mode == Selfie.RGB:
             self.colour[2] = max(self.colour[2] - 10, 0)
         if self.mode == Selfie.FLIP:
-            self.colour_index2 = (self.colour_index2 - 1 + len(Colours.ALL_COLOURS)) % len(Colours.ALL_COLOURS)
+            self.colour_index2 = max(self.colour_index2 - 1, 0)
             self.colour2 = Colours.ALL_COLOURS[self.colour_index2]
