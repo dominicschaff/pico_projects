@@ -13,14 +13,14 @@ def xrange(s, e, i):
 
 
 class Colours:
-    BLACK = (0, 0, 0)
-    RED = (255, 0, 0)
-    YELLOW = (255, 150, 0)
-    GREEN = (0, 255, 0)
-    CYAN = (0, 255, 255)
-    BLUE = (0, 0, 255)
-    PURPLE = (180, 0, 255)
-    WHITE = (255, 255, 255)
+    BLACK = [0, 0, 0]
+    RED = [255, 0, 0]
+    YELLOW = [255, 150, 0]
+    GREEN = [0, 255, 0]
+    CYAN = [0, 255, 255]
+    BLUE = [0, 0, 255]
+    PURPLE = [180, 0, 255]
+    WHITE = [255, 255, 255]
     ALL_COLOURS = (RED, YELLOW, GREEN, CYAN, BLUE, PURPLE, WHITE)
 
 
@@ -58,7 +58,7 @@ class Leds():
         time.sleep_ms(10)
 
     def pixel(self, i, colour, brightness=0.1):
-        self.ar[i] = (int(colour[1] * brightness)<<16) + (int(colour[0] * brightness)<<8) + int(colour[2] * brightness)
+        self.ar[i] = (int(colour[0] * brightness)<<16) + (int(colour[1] * brightness)<<8) + int(colour[2] * brightness)
 
     def fill(self, colour, brightness=0.1):
         for i in range(self.leds):
