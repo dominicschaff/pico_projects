@@ -9,6 +9,7 @@ class Selfie:
     FLIP = 3
     RAINBOW = 4
     BREATHE = 5
+    RAINBOW_BREATHE = 6
 
     def __init__(self, led_pin=16, led_count=1):
         self.led_count = led_count
@@ -30,10 +31,10 @@ class Selfie:
         self.iteration = 0
 
     def mode_next(self):
-        self.set_mode((self.mode+1)%6)
+        self.set_mode((self.mode + 1)%7)
 
     def mode_previous(self):
-        self.set_mode((self.mode+5)%6)
+        self.set_mode((self.mode - 1 + 7)%7)
 
     def mode_breathe(self):
         self.leds.fill(self.colour, abs(self.iteration / 50))
@@ -60,6 +61,10 @@ class Selfie:
             self.leds.pixel(i, self.wheel(rc_index & 255), self.brightness)
         self.iteration = (self.iteration + self.iteration_size) % 256
 
+    def mode_rainbow_breathe(self):
+        self.leds.fill(self.wheel(self.iteration & 255), self.brightness)
+        self.iteration = (self.iteration + self.iteration_size) % 256
+
     def mode_flip(self):
         for i in range(self.half):
             self.leds.pixel(i, self.colour, self.brightness)
@@ -79,10 +84,12 @@ class Selfie:
             self.mode_rainbow()
         elif self.mode == Selfie.BREATHE:
             self.mode_breathe()
+        elif self.mode == Selfie.RAINBOW_BREATHE:
+            self.mode_rainbow_breathe()
         self.leds.show()
 
     def b1_up(self):
-        if self.mode in [Selfie.WHITE, Selfie.RAINBOW, Selfie.FLIP]:
+        if self.mode in [Selfie.WHITE, Selfie.RAINBOW, Selfie.FLIP, Selfie.RAINBOW_BREATHE]:
             self.brightness = min(1.0, self.brightness + 0.1)
         if self.mode == Selfie.BREATHE:
             self.colour_index = min(self.colour_index + 1, MAX_COLOUR)
@@ -91,7 +98,7 @@ class Selfie:
             self.colour[0] = min(self.colour[0] + 10, 255)
 
     def b1_down(self):
-        if self.mode in [Selfie.WHITE, Selfie.RAINBOW, Selfie.FLIP]:
+        if self.mode in [Selfie.WHITE, Selfie.RAINBOW, Selfie.FLIP, Selfie.RAINBOW_BREATHE]:
             self.brightness = max(0.0, self.brightness - 0.1)
         if self.mode == Selfie.BREATHE:
             self.colour_index = max(self.colour_index - 1, 0)
@@ -105,7 +112,7 @@ class Selfie:
         if self.mode == Selfie.FLIP:
             self.colour_index = min(self.colour_index + 1, MAX_COLOUR)
             self.colour = Colours.ALL_COLOURS[self.colour_index]
-        if self.mode in [Selfie.RAINBOW, Selfie.BREATHE]:
+        if self.mode in [Selfie.RAINBOW, Selfie.BREATHE, Selfie.RAINBOW_BREATHE]:
             self.iteration_size += 1
         if self.mode == Selfie.WHITE:
             self.white_index = min(self.white_index + 1, MAX_COLOUR)
@@ -116,7 +123,7 @@ class Selfie:
         if self.mode == Selfie.FLIP:
             self.colour_index = max(self.colour_index - 1, 0)
             self.colour = Colours.ALL_COLOURS[self.colour_index]
-        if self.mode in [Selfie.RAINBOW, Selfie.BREATHE]:
+        if self.mode in [Selfie.RAINBOW, Selfie.BREATHE, Selfie.RAINBOW_BREATHE]:
             self.iteration_size -= 1
         if self.mode == Selfie.WHITE:
             self.white_index = max(0, self.white_index -1)
