@@ -13,7 +13,8 @@ weather = Weather(graph_every=30*2)
 sensor = ahtx0.AHT10(i2c)
 
 while True:
-    weather.vals(sensor.temperature, sensor.relative_humidity, 0)
+    weather.vals(sensor.temperature, sensor.relative_humidity)
     weather.update()
     utime.sleep(30)
+
 

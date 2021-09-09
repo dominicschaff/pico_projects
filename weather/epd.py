@@ -181,7 +181,7 @@ class EPD_2in9(framebuf.FrameBuffer):
 
         self.send_command(0x21) #  Display update control
         self.send_data(0x00)
-        self.send_data(0x80)  
+        self.send_data(0x80)
     
         self.SetCursor(0, 0)
         self.ReadBusy()

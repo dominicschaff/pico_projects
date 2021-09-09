@@ -64,3 +64,4 @@ class Leds():
         for i in range(self.leds):
             self.pixel(i, colour, brightness)
 
+
