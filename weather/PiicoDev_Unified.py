@@ -39,14 +39,8 @@ class I2CBase:
         raise NotImplementedError("__init__")
 
 class I2CUnifiedMachine(I2CBase):
-    def __init__(self, bus=None, freq=None, sda=None, scl=None):
-        if bus is None:
-            bus = 0
-        if freq is not None and sda is not None and scl is not None:
-            print("Using supplied freq, sda and scl to create machine I2C")
-            self.i2c = I2C(bus, freq=freq, sda=sda, scl=scl)
-        else:
-            self.i2c = I2C(bus)
+    def __init__(self, i2c):
+        self.i2c = i2c
 
         self.writeto_mem = self.i2c.writeto_mem
         self.readfrom_mem = self.i2c.readfrom_mem
@@ -73,7 +67,7 @@ class I2CUnifiedMicroBit(I2CBase):
         
     def readfrom_mem(self, addr, memaddr, nbytes, *, addrsize=8):
         ad = memaddr.to_bytes(addrsize // 8, 'big')  # pad address for eg. 16 bit
-        i2c.write(addr, ad)
+        i2c.write(addr, ad, repeat=True)
         return i2c.read(addr, nbytes)    
     
     def write8(self, addr, reg, data):

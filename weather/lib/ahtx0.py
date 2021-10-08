@@ -115,3 +115,4 @@ class AHT10:
 
 class AHT20(AHT10): 
     AHTX0_CMD_INITIALIZE = 0xBE  # Calibration command
+

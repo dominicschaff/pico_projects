@@ -55,7 +55,7 @@ class PiicoDev_MS5637(object):
     
     coeff_valid = False
 
-    def __init__(self, bus=None, freq=None, sda=None, scl=None, addr = _I2C_ADDRESS):
+    def __init__(self, i2c, addr = _I2C_ADDRESS):
         try:
             if compat_ind >= 1:
                 pass
@@ -63,7 +63,7 @@ class PiicoDev_MS5637(object):
                 print(compat_str)
         except:
             print(compat_str)
-        self.i2c = create_unified_i2c(bus=bus, freq=freq, sda=sda, scl=scl)
+        self.i2c = I2CUnifiedMachine(i2c)
         self.addr = addr
         #try:
         self.i2c.write8(self.addr, None, bytes([self._SOFTRESET]))

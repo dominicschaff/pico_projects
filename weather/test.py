@@ -4,8 +4,13 @@
 
 from PiicoDev_MS5637 import PiicoDev_MS5637
 from PiicoDev_Unified import sleep_ms
+from lib.ahtx0 import AHT20
+from lib.mylib import CreateI2C
 
-pressure = PiicoDev_MS5637()
+i2c = CreateI2C()
+print(i2c.scan())
+pressure = PiicoDev_MS5637(i2c)
+sensor = AHT20(i2c)
 
 while True:
     press_hPa = pressure.read_pressure()
