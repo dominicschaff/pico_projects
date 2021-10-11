@@ -1,7 +1,8 @@
 from screen import Screen
-from lcd import BLACK, WHITE
+from lcd import BLACK, WHITE, CYAN, PURPLE, BLUE
 from random import randrange
 from PiicoDev_MS5637 import PiicoDev_MS5637
+import time
 
 class Weather:
     def __init__(self, graph_every=10):
@@ -15,20 +16,22 @@ class Weather:
         self.last = 0
         self.graph_every = graph_every
         self.voltage = 0
-        self.current = 0
         self.percentage = 0
-        self.width = 100
+        self.width = self.screen.lcd.width
 
     def update(self):
         self.screen.clear()
         self.screen.rect_fill(0, 0, 160, 10, BLACK)
-        self.screen.text_center("%.1fV %.0f mA %2.0f%%" % (self.voltage, self.current, self.percentage), 80, 5, WHITE)
+        self.screen.text("%.1fV" % self.voltage, 0, 1, WHITE)
+#         self.screen.text_center("%d" % time.localtime(), self.screen.lcd.width//2, 5, WHITE)
+        self.screen.text_right("%.0f%%"%self.percentage, self.screen.lcd.width, 5, WHITE)
         
-        top_y = 18
+        top_y = 19
         first = 25
         second = 80
         third = 135
         box_width = 50
+        half_x =  self.screen.lcd.width//2
 
         self.screen.text_center("%.1f" % self.temp, first, top_y, BLACK)
         self.screen.text_center("%.0f%%" % self.humid, second, top_y, BLACK)
@@ -37,18 +40,12 @@ class Weather:
         self.screen.rect(first-25, top_y - 8, box_width, 16, BLACK)
         self.screen.rect(second-25, top_y - 8, box_width, 16, BLACK)
         self.screen.rect(third-25, top_y - 8, box_width, 16, BLACK)
-
-        self.screen.graph("T:", self.temps, self.screen.lcd.width//2-10, 43, 30, self.width, top=False)
-        self.screen.text_center("%.0f" % min(self.temps), 145, 38, BLACK)
-        self.screen.text_center("%.0f" % max(self.temps), 145, 48, BLACK)
-
-        self.screen.graph("H:", self.humids, self.screen.lcd.width//2-10, 77, 30, self.width, top=False)
-        self.screen.text_center("%.0f" % min(self.humids), 145, 73, BLACK)
-        self.screen.text_center("%.0f" % max(self.humids), 145, 82, BLACK)
         
-        self.screen.graph("B:", self.baroms, self.screen.lcd.width//2-10, 111, 30, self.width, top=False)
-        self.screen.text_center("%.0f" % min(self.baroms), 145, 106, BLACK)
-        self.screen.text_center("%.0f" % max(self.baroms), 145, 114, BLACK)
+        self.screen.graph("Temperature", self.temps, half_x, 45, 32, self.width)
+
+        self.screen.graph("Humidity", self.humids, half_x, 78, 32, self.width)
+        
+        self.screen.graph("Barometer", self.baroms, half_x, 111, 32, self.width)
         self.screen.show()
 
     def vals(self, temp, humid, barom):
@@ -69,9 +66,8 @@ class Weather:
             while len(self.baroms) > self.width:
                 self.baroms.pop(0)
 
-    def battery(self, v, c, p):
+    def battery(self, v, p):
         self.voltage = v
-        self.current = c
         self.percentage = p
 
 
@@ -97,7 +93,7 @@ def main():
 
     while True:
         v, c, P = ups.do_reading()
-        weather.battery(v, c, P)
+        weather.battery(v, P)
         if sensors_enabled:
             weather.vals(sensor.temperature, sensor.relative_humidity, pressure.read_pressure())
         weather.update()
@@ -106,7 +102,7 @@ def main():
 
 if __name__ == '__main__':
     weather = Weather(graph_every=1)
-    for i in range(20):
+    for i in range(weather.width):
         weather.vals(randrange(15, 32), randrange(20, 50), randrange(900, 1100))
-    weather.battery(4, 0.1, 90)
+    weather.battery(4, 90)
     weather.update()

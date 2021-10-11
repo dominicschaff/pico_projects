@@ -8,6 +8,8 @@ BLACK  =  0x0000
 GREEN   =  0x001F
 BLUE    =  0xF800
 RED   = 0x07E0
+CYAN = 0xF81F
+PURPLE = 0xFFE0
 
 BL = 13
 DC = 8
@@ -185,30 +187,30 @@ if __name__=='__main__':
 
     lcd = LCD()
     #color BRG
-    lcd.fill(lcd.WHITE)
+    lcd.fill(WHITE)
 
     lcd.show()
 
-    lcd.fill_rect(0,0,160,20,lcd.RED)
-    lcd.rect(0,0,160,20,lcd.RED)
-    lcd.text("Raspberry Pi Pico",2,8,lcd.WHITE)
+    lcd.fill_rect(0,0,160,20,RED)
+    lcd.rect(0,0,160,20,RED)
+    lcd.text("Raspberry Pi Pico",2,8,WHITE)
 
-    lcd.fill_rect(0,20,160,20,lcd.BLUE)
-    lcd.rect(0,20,160,20,lcd.BLUE)
-    lcd.text("PicoGo",2,28,lcd.WHITE)
+    lcd.fill_rect(0,20,160,20,BLUE)
+    lcd.rect(0,20,160,20,BLUE)
+    lcd.text("PicoGo",2,28,WHITE)
 
-    lcd.fill_rect(0,40,160,20,lcd.GREEN)
-    lcd.rect(0,40,160,20,lcd.GREEN)
-    lcd.text("Pico-lcd-1.8",2,48,lcd.WHITE)
+    lcd.fill_rect(0,40,160,20,GREEN)
+    lcd.rect(0,40,160,20,GREEN)
+    lcd.text("Pico-lcd-1.8",2,48,WHITE)
 
     lcd.fill_rect(0,60,160,10,0X07FF)
     lcd.rect(0,60,160,10,0X07FF)
-    lcd.fill_rect(0,70,160,10,0xF81F)
-    lcd.rect(0,70,160,10,0xF81F)
+    lcd.fill_rect(0,70,160,10,CYAN)
+    lcd.rect(0,70,160,10,CYAN)
     lcd.fill_rect(0,80,160,10,0x7FFF)
     lcd.rect(0,80,160,10,0x7FFF)
-    lcd.fill_rect(0,90,160,10,0xFFE0)
-    lcd.rect(0,90,160,10,0xFFE0)
+    lcd.fill_rect(0,90,160,10,PURPLE)
+    lcd.rect(0,90,160,10,PURPLE)
     lcd.fill_rect(0,100,160,10,0XBC40)
     lcd.rect(0,100,160,10,0XBC40)
     lcd.fill_rect(0,110,160,10,0XFC07)

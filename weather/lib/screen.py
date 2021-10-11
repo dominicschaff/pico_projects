@@ -1,4 +1,4 @@
-from lcd import LCD, WHITE, BLACK
+from lcd import LCD, WHITE, BLACK, GREEN, RED, CYAN
 
 class Screen:
     def __init__(self):
@@ -14,8 +14,10 @@ class Screen:
         self.lcd.text(s, x, y, colour)
 
     def text_center(self, s, x, y, colour):
-        c = len(s) * 4
-        self.lcd.text(s, x-c, y-4, colour)
+        self.lcd.text(s, x - len(s) * 4, y-4, colour)
+    
+    def text_right(self, s, x, y, colour):
+        self.lcd.text(s, x - len(s)*8, y-4, colour)
 
     def box(self, x, y, s, colour):
         self.lcd.rect(x-s//2, y-s//2, s, s, colour)
@@ -35,14 +37,11 @@ class Screen:
     def show(self):
         self.lcd.show()
 
-    def graph(self, title, values, x, y, h, w, top=True):
-        
-        if top:
-            self.text_center(title, x, y-h//2-8, BLACK)
-        else:
-            self.text_center(title, x-w//2 - 10, y, BLACK)
-
+    def graph(self, title, values, x, y, h, w):
         self.lcd.rect(x-w//2-1, y-h//2-1, w+2, h+2, BLACK)
+        self.text_center(title, x, y, CYAN)
+        self.text_center("%.0f" % max(values), x, y - h//2 + 5, RED)
+        self.text_center("%.0f" % min(values), x, y + h//2 - 4, GREEN)
 
         v_min, v_max = min(values), max(values)
 
