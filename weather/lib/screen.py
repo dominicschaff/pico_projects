@@ -1,4 +1,4 @@
-from lcd import LCD, WHITE, BLACK, GREEN, RED, CYAN
+from lcd import LCD, WHITE, BLACK, GREEN, RED, CYAN, MAGENTA
 
 class Screen:
     def __init__(self):
@@ -38,7 +38,7 @@ class Screen:
         self.lcd.show()
 
     def graph(self, title, values, x, y, h, w):
-        self.lcd.rect(x-w//2-1, y-h//2-1, w+2, h+2, BLACK)
+        self.lcd.rect(x-w//2-1, y-h//2-1, w+2, h+2, PURPLE)
         self.text_center(title, x, y, CYAN)
         self.text_center("%.0f" % max(values), x, y - h//2 + 5, RED)
         self.text_center("%.0f" % min(values), x, y + h//2 - 4, GREEN)
