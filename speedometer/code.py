@@ -2,71 +2,61 @@ from pico import Pico
 import board
 from stepper import Stepper
 import time
-from screen import SSD1306_I2C
+from screen import Screen
 import digitalio
 import neo
-import errors
+from config import *
+import displayio
+displayio.release_displays()
 
 
-err = neo.Neo(pin=board.GP16)
-signal = neo.Neo(pin=board.GP3, count=12)
+err = neo.Neo(pin=PIN_ERROR)
 
 class Speedometer:
     def __init__(self):
         self.pico = Pico()
-        self.i2c = Pico.i2c_create()
-        self.speed = Stepper(i2c=self.i2c, address=0xe)
+        self.i2c = Pico.i2c_create(sda=PIN_I2C_SDA, scl=PIN_I2C_SCL)
+        self.speed = Stepper(i2c=self.i2c, address=MOTOR_ADDRESS)
         self.time_last_speed = time.monotonic_ns()//1_000_000
+        self.previous_distance = 0
         self.time_last_rev = 0
-        self.display = SSD1306_I2C(128, 32, self.i2c)
+        self.display = Screen(self.i2c)
         self.distance = 0
         self.last_update = 0
-        self.wheel_sensor = Pico.button(board.GP2, digitalio.Pull.UP)
-        self.status_wheel = Pico.led(board.GP14)
-        self.status_startup = Pico.led(board.GP7)
-        self.status_display = Pico.led(board.GP8)
+        self.wheel_sensor = Pico.button(PIN_MAGNETIC, digitalio.Pull.UP)
 
     def startup(self):
-        self.status_startup.value = True
         self.speed.safe_start()
-        self.speed.calibrate(board.A0)
-        self.status_startup.value = False
+        self.speed.calibrate(PIN_LIGHT)
 
     def update(self):
         now = time.monotonic_ns()//1_000_000
         if now < self.last_update + 100:
             return
-        self.status_display.value = True
+        print("UPDATE")
+        print(self.distance)
         self.last_update = now
-        self.speed.goto_scaled(self._calculate_speed(), max_value=100)
+        s = self._calculate_speed()
+        print(s)
+        self.speed.goto_scaled(s, max_value=100)
 
-        self.update_display()
-        self.status_display.value = False
+        self.display.set_digit(self.distance)
 
     def _calculate_speed(self):
-        # (circumference * m->km * ms->s / (now - last_update)
-        # (circumference * 3.6 * 1000) / (now - last_update)
-        s = int((2.6 * 3.6 * 1000) / (self.last_update - self.time_last_speed))
-        return s
-
-    def update_display(self):
-        self.display.fill(0)
-        self.display.text("%05.0f"%(self.distance), 0, 0, 1, size=4)
-        self.display.show()
+        s = 1000*(self.distance - self.previous_distance) / (self.last_update - self.time_last_speed)
+        self.previous_distance = self.distance
+        return int(s)
 
     def spin(self):
-        self.distance += 0.002
+        self.distance += WHEEL_SIZE
         self.time_last_speed = time.monotonic_ns()//1_000_000
 
     def run(self):
         while True:
             if self.wheel_sensor.value == False:
-                self.status_wheel.value = True
                 self.spin()
                 while self.wheel_sensor.value == False:
                     pass
-                self.status_wheel.value = False
-            time.sleep(0.001)
             self.update()
 
 
@@ -81,26 +71,25 @@ def main():
 
 
 if __name__ == '__main__':
-    signal.rainbow()
-    err.fill(errors.NONE)
+    err.fill(ERR_NONE)
     try:
         main()
     except RuntimeError as re:
         print(re)
         if str(re) == 'No pull up found on SDA or SCL; check your wiring':
-            err.fill(errors.NO_I2C) # yellow
+            err.fill(ERR_NO_I2C) # yellow
         else:
-            err.fill(errors.RUNTIME_ERROR) # cyan
+            err.fill(ERR_RUNTIME_ERROR) # cyan
     except ValueError as ve:
         print(ve)
         if str(ve) == 'No I2C device at address: 0x3c':
-            err.fill(errors.NO_SCREEN) # red
+            err.fill(ERR_NO_SCREEN) # red
         else:
-            err.fill(errors.VALUE_ERROR) # green
+            err.fill(ERR_VALUE_ERROR) # green
     except OSError as ose:
         print(ose)
         if str(ose) == '[Errno 19] No such device':
-            err.fill(errors.NO_MOTOR) # purple
+            err.fill(ERR_NO_MOTOR) # purple
         else:
-            err.fill(errors.OS_ERROR) # blue
+            err.fill(ERR_OS_ERROR) # blue
 

@@ -27,7 +27,7 @@ class Stepper:
 
     def goto(self, target):
         if target == self.last:
-            print("Ignore change")
+#             print("Ignore change")
             return
         self.last = target
         print("GOTO: ", target)
