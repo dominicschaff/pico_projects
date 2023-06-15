@@ -1,96 +1,73 @@
-from pico import Pico
+from lib.pico import Pico
+from lib.neo import Neo, WHITE, CYAN, BLACK
 import board
-from stepper import Stepper
-import time
-from screen import Screen
-import digitalio
-import neo
-import errors
-from config import *
 import displayio
-displayio.release_displays()
+import time
+
+from adafruit_displayio_sh1106 import SH1106
+from adafruit_display_text.label import Label
+from adafruit_bitmap_font import bitmap_font
+from sound import Audio, JINGLE_BELLS, MARIO, HANUKKAH
+from lib.ahtx0 import AHTx0
+from lib.dps310 import DPS310
 
 
-err = neo.Neo(pin=PIN_ERROR)
-
-class Speedometer:
+class Mine:
     def __init__(self):
-        self.pico = Pico()
-        self.i2c = Pico.i2c_create(sda=PIN_I2C_SDA, scl=PIN_I2C_SCL)
-        self.speed = Stepper(i2c=self.i2c, address=MOTOR_ADDRESS)
-        self.time_last_speed = time.monotonic_ns()//1_000_000
-        self.time_last_rev = 0
-        self.display = Screen(self.i2c)
-        self.distance = 0
-        self.last_update = 0
-        self.wheel_sensor = Pico.button(PIN_MAGNETIC, digitalio.Pull.UP)
-
-    def startup(self):
-        self.speed.safe_start()
-        self.speed.calibrate(PIN_LIGHT)
-
+        displayio.release_displays()
+        self.i2c = Pico.i2c_create()
+        self.neo = Neo(board.GP16, brightness=0.1, count=1)
+    
+    def setup(self):
+        self.font = bitmap_font.load_font("fonts/UbuntuMono-Regular-16.pcf")
+        self.display_bus = displayio.I2CDisplay(
+            self.i2c,
+            device_address=0x3c
+        )
+        self.display = SH1106(
+            self.display_bus,
+            width=128,
+            height=64
+        )
+        self.ahtx = AHTx0(self.i2c)
+        self.dps310 = DPS310(self.i2c)
+        
+        self.text_group = displayio.Group()
+        
+        self.temp = self._create_label(16, 8, "Temp")
+        self.humid = self._create_label(16, 24, "Humid")
+        self.temp2 = self._create_label(16, 40, "Temp2")
+        self.height = self._create_label(16, 56, "Height")
+        
+        self.display.show(self.text_group)
+    
+    def _create_label(self, x, y, text="T"):
+        label = Label(self.font, text=text)
+        label.x, label.y = x, y
+        self.text_group.append(label)
+        return label
+    
+    def noise(self):
+        audio = Audio(left=board.GP8)
+        audio.buzzer_init()
+        audio.play_song(HANUKKAH)
+        audio.buzzer.deinit()
+    
     def update(self):
-        now = time.monotonic_ns()//1_000_000
-        if now < self.last_update + 100:
-            return
-        self.last_update = now
-        self.speed.goto_scaled(self._calculate_speed(), max_value=100)
-
-        self.update_display()
-
-    def _calculate_speed(self):
-        # (circumference * m->km * ms->s / (now - last_update)
-        # (circumference * 3.6 * 1000) / (now - last_update)
-        s = int((2.6 * 3.6 * 1000) / (self.last_update - self.time_last_speed))
-        return s
-
-    def update_display(self):
-        self.display.set_digit(self.distance)
-
-    def spin(self):
-        self.distance += 0.002
-        self.time_last_speed = time.monotonic_ns()//1_000_000
-
-    def run(self):
-        while True:
-            if self.wheel_sensor.value == False:
-                self.spin()
-                while self.wheel_sensor.value == False:
-                    pass
-            time.sleep(0.001)
-            self.update()
+        self.temp.text = "%6.1f C" % self.ahtx.temperature
+        self.humid.text = "%6.1f %%" % self.ahtx.relative_humidity
+        self.temp2.text = "%6.1f C" % self.dps310.temperature
+        self.height.text = "%6.1f bar" % self.dps310.pressure
+        self.neo.fill(self.neo.wheel(255-int(self.ahtx.temperature * 5)))
+        
 
 
 def main():
-    speedo = Speedometer()
-    speedo.startup()
+    mine = Mine()
+    mine.setup()
+    
     while True:
-        try:
-            speedo.run()
-        except Exception:
-                pass
-
-
+        mine.update()
+        time.sleep(0.2)
 if __name__ == '__main__':
-    err.fill(errors.NONE)
-    try:
-        main()
-    except RuntimeError as re:
-        print(re)
-        if str(re) == 'No pull up found on SDA or SCL; check your wiring':
-            err.fill(errors.NO_I2C) # yellow
-        else:
-            err.fill(errors.RUNTIME_ERROR) # cyan
-    except ValueError as ve:
-        print(ve)
-        if str(ve) == 'No I2C device at address: 0x3c':
-            err.fill(errors.NO_SCREEN) # red
-        else:
-            err.fill(errors.VALUE_ERROR) # green
-    except OSError as ose:
-        print(ose)
-        if str(ose) == '[Errno 19] No such device':
-            err.fill(errors.NO_MOTOR) # purple
-        else:
-            err.fill(errors.OS_ERROR) # blue
-
+    main()

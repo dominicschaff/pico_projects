@@ -31,8 +31,11 @@ class Pico:
         return LED
 
     @staticmethod
-    def i2c_create(sda=board.GP0, scl=board.GP1):
-        return busio.I2C(scl, sda)
+    def i2c_create(sda=None, scl=None):
+        if sda is None or scl is None:
+            return busio.I2C(board.GP1, board.GP0)
+        else:
+            return busio.I2C(scl, sda)
 
     @staticmethod
     def i2c_scanner(sda=None, scl=None, i2c=None):
@@ -43,6 +46,13 @@ class Pico:
         addresses = [hex(device_address) for device_address in i2c.scan()]
         i2c.unlock()
         return addresses
+    
+    @staticmethod
+    def i2c_show_scan():
+        i2c = Pico.i2c_create()
+        print("Addresses:")
+        for address in Pico.i2c_scanner(i2c=i2c):
+            print(address)
 
     @staticmethod
     def flash(led, duration=0.1):
@@ -80,7 +90,4 @@ class Pico:
         self.led_off()
 
 if __name__ == '__main__':
-    i2c = Pico.i2c_create()
-    print("Addresses:")
-    for address in Pico.i2c_scanner(i2c=i2c):
-        print(address)
+    Pico.i2c_show_scan()

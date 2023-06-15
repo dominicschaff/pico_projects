@@ -1,6 +1,6 @@
 import time
 import board
-import neopixel
+from lib.neopixel import NeoPixel
 
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -15,7 +15,7 @@ WHITE = (50, 50, 50)
 class Neo:
     def __init__(self, pin=board.GP28, count=1, brightness=0.2, auto_write=False):
         self.count = count
-        self.pixels = neopixel.NeoPixel(pin, count, brightness=brightness, auto_write=auto_write)
+        self.pixels = NeoPixel(pin, count, brightness=brightness, auto_write=auto_write)
 
     def wheel(self, pos):
         # Input a value 0 to 255 to get a color value.
