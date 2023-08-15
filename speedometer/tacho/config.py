@@ -7,9 +7,9 @@ PIN_LIGHT = board.GP29
 PIN_RESET = board.GP7
 PIN_ERROR = board.GP16
 PIN_WP_MEMORY = board.GP5
-PIN_LIGHT_NEO = board.GP14
-PIN_LIGHT_DIMS = board.GP8
-PIN_LIGHT_BRIGHTS = board.GP15
+PIN_LIGHT_NEO = board.GP7
+PIN_LIGHT_DIMS = board.GP26
+PIN_LIGHT_BRIGHTS = board.GP28
 
 MOTOR_ADDRESS = 0xe
 
@@ -17,7 +17,7 @@ WHEEL_SIZE = 1.0/862.0
 
 RESET_TIME = 5_000
 
-UPDATE_INTERVAL = 1_000
+UPDATE_INTERVAL = 100_000
 
 
 # Colours:
@@ -31,8 +31,8 @@ ERR_NO_STORAGE    = (255, 255,   0) # orange
 ERR_RUNTIME_ERROR = (  0, 255, 255) # cyan
 ERR_NO_I2C        = (255, 255, 255) # white
 
-LIGHT_BRIGHT      = (  0,   0, 255)
-LIGHT_DIMS        = (  0, 255,   0)
+LIGHT_BRIGHT      = (  0,   0, 255) # Blue
+LIGHT_DIMS        = (150,   0,   0) # Green
 
 # State
 STATE_FILE = "/data.json"

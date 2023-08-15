@@ -28,5 +28,8 @@ class Screen:
         self.text_area.y = self.height//2
         self.display.show(self.text_area)
     
-    def set_digit(self, num):
-        self.text_area.text = "%05.0f" % num
+    def set_digit(self, num, tenths=False):
+        if tenths:
+            self.text_area.text = "%05.1f" % num
+        else:
+            self.text_area.text = "%05.0f" % num

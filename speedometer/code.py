@@ -31,6 +31,9 @@ class Speedometer:
         self.trip_button = Pico.button(PIN_RESET)
         self.display_total_distance = True
         self.memory = Memory(self.i2c, PIN_WP_MEMORY)
+        #self.neo_lights = neo.Neo(pin=PIN_LIGHT_NEO)
+        #self.pin_light_dim = Pico.button(PIN_LIGHT_DIMS)
+        #self.pin_light_bright = Pico.button(PIN_LIGHT_BRIGHTS)
 
     def startup(self):
         self.speed.safe_start()
@@ -38,7 +41,7 @@ class Speedometer:
         self._read_data()
     
     def _read_data(self):
-        self.distance, self.trip_button = self.memory.read_distances()
+        self.distance, self.trip_meter = self.memory.read_distances()
         
     def _write_data(self):
         self.memory.write_distances(self.distance, self.trip_meter)
@@ -47,19 +50,18 @@ class Speedometer:
         now = time.monotonic_ns()//1_000_000
         if now < self.last_update + UPDATE_INTERVAL:
             return
-        print("UPDATE")
-        print(self.distance)
+        print("Update")
         self.last_update = now
         s = self._calculate_speed()
-        print(s)
         self.speed.goto_scaled(s, max_value=100)
 
-        self.display.set_digit(self.distance if self.display_total_distance else self.trip_meter)
+        if self.display_total_distance:
+            self.display.set_digit(self.distance)
+        else:
+            self.display.set_digit(self.trip_meter, tenths=True)
         
-        if self.last_write + STATE_MINIMUM_DURATION < now or self.data['odometer'] + STATE_MINIMUM_DISTANCE < self.distance:
+        if self.last_write + STATE_MINIMUM_DURATION < now:
             self.last_write = now
-            self.data["odometer"] = self.distance
-            self.data["trip_meter"] = self.trip_meter
             self._write_data()
 
     def _calculate_speed(self):
@@ -68,6 +70,7 @@ class Speedometer:
         return int(s)
 
     def spin(self):
+        print("spin")
         self.distance += WHEEL_SIZE
         self.time_last_speed = time.monotonic_ns()//1_000_000
 
@@ -80,7 +83,6 @@ class Speedometer:
                     pass
             self.update()
             if self.trip_button.value == True:
-                print("TRIP")
                 start = time.monotonic_ns()//1_000_000
                 while self.trip_button.value == True:
                     pass
@@ -90,16 +92,19 @@ class Speedometer:
                 else:
                     self.trip_meter = 0.0
                     self._write_data()
+#             if self.pin_light_dim.value:
+#                 if self.pin_light_bright.value:
+#                     self.neo_lights.fill(LIGHT_BRIGHT)
+#                 else:
+#                     self.neo_lights.fill(LIGHT_DIMS)
                 
 
 def main():
     speedo = Speedometer()
     speedo.startup()
+    print("running")
     while True:
-        try:
-            speedo.run()
-        except Exception:
-                pass
+        speedo.run()
 
 
 if __name__ == '__main__':

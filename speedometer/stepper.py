@@ -27,10 +27,8 @@ class Stepper:
 
     def goto(self, target):
         if target == self.last:
-#             print("Ignore change")
             return
         self.last = target
-        print("GOTO: ", target)
         while not self._i2c.try_lock():
             pass
         command = [0xE0,
@@ -61,22 +59,23 @@ class Stepper:
     def right(self, steps=1):
         self.goto(self.position() - steps)
 
-    def calibrate(self, pin, size=120, difference=8_000):
+    def calibrate(self, pin, size=120, difference=16_000):
         print("Turn clockwise")
         self.right(50)
-        time.sleep(0.5)
+        time.sleep(1)
         with analogio.AnalogIn(pin) as adc:
             start = adc.value
-            min_value = adc.value
 
             while True:
                 print("Move Left")
                 self.left()
-                time.sleep(0.01)
-                if adc.value > min_value and min_value < start - difference:
+                time.sleep(0.02)
+                v = adc.value
+                print("%d -> %d = %d" % (start, v, start - difference))
+                start = max(v, start)
+                if v < start - difference:
                     print("Hit Sensor")
                     break
-                min_value = adc.value
 
         self.start = self.position()
         self.end = self.start - size
