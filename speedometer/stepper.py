@@ -59,7 +59,7 @@ class Stepper:
     def right(self, steps=1):
         self.goto(self.position() - steps)
 
-    def calibrate(self, pin, size=120, difference=16_000):
+    def calibrate(self, pin, size=120, difference=5_000):
         print("Turn clockwise")
         self.right(50)
         time.sleep(1)
@@ -71,7 +71,7 @@ class Stepper:
                 self.left()
                 time.sleep(0.02)
                 v = adc.value
-                print("%d -> %d = %d" % (start, v, start - difference))
+                print("s:%d | c:%d < l:%d" % (start, v, start - difference))
                 start = max(v, start)
                 if v < start - difference:
                     print("Hit Sensor")
